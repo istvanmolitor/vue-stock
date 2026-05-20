@@ -37,7 +37,24 @@ const stockRoutes: RouteRecordRaw[] = [
     component: () => import('../views/warehouse-region/WarehouseRegionEdit.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/admin/stock/movement',
+    name: 'admin-stock-movement-index',
+    component: () => import('../views/stock-movement/StockMovementIndex.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock/movement/create',
+    name: 'admin-stock-movement-create',
+    component: () => import('../views/stock-movement/StockMovementCreate.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock/movement/:id/edit',
+    name: 'admin-stock-movement-edit',
+    component: () => import('../views/stock-movement/StockMovementEdit.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 export default stockRoutes
-
