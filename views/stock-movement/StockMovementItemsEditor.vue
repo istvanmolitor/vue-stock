@@ -4,6 +4,7 @@ import InputError from '@admin/components/ui/InputError.vue'
 import Input from '@admin/components/ui/Input.vue'
 import Label from '@admin/components/ui/Label.vue'
 import Select from '@admin/components/ui/Select.vue'
+import { ProductSelect } from '@product'
 import type {
   ProductOption,
   StockMovementType,
@@ -33,10 +34,6 @@ const isTransfer = computed(() => props.movementType === 'transfer')
 
 const warehouseRegionOptions = computed(() =>
   props.warehouseRegions.map((r) => ({ value: r.id, label: r.label })),
-)
-
-const productOptions = computed(() =>
-  props.products.map((p) => ({ value: p.id, label: p.label })),
 )
 
 function destinationOptions(excludeId: number | null) {
@@ -130,12 +127,12 @@ function itemError(index: number, field: string): string[] | undefined {
 
         <div class="space-y-1">
           <Label :for="`item-product-${index}`">Termék *</Label>
-          <Select
+          <ProductSelect
             :id="`item-product-${index}`"
             :model-value="item.product_id"
-            :options="productOptions"
+            :options="products"
             placeholder="Válassz terméket"
-            @update:model-value="updateItem(index, 'product_id', Number($event))"
+            @update:model-value="updateItem(index, 'product_id', $event)"
           />
           <InputError :message="itemError(index, 'product_id')" />
         </div>
@@ -158,5 +155,3 @@ function itemError(index: number, field: string): string[] | undefined {
     <InputError :message="errors['items']" />
   </div>
 </template>
-
-
