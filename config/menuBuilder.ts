@@ -1,5 +1,5 @@
 import { MenuBuilder, type MenuItemConfig } from '@menu/index'
-import { ArrowRightLeft, Boxes, Warehouse } from 'lucide-vue-next'
+import { ArrowRightLeft, Boxes, Package, Warehouse } from 'lucide-vue-next'
 
 export class StockMenuBuilder extends MenuBuilder {
   build(menu: MenuItemConfig, menuName: string): MenuItemConfig {
@@ -17,6 +17,13 @@ export class StockMenuBuilder extends MenuBuilder {
       icon: Boxes,
       order: 40,
       children: [
+        {
+          id: 'stock-products',
+          title: 'Termék készlet',
+          path: '/admin/stock/products',
+          icon: Package,
+          order: 5,
+        },
         {
           id: 'stock-warehouses',
           title: 'Raktárak',

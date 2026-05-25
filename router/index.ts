@@ -2,6 +2,18 @@ import type { RouteRecordRaw } from 'vue-router'
 
 const stockRoutes: RouteRecordRaw[] = [
   {
+    path: '/admin/stock/products',
+    name: 'admin-stock-products',
+    component: () => import('../views/stock-product/StockProductIndex.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock/products/:id',
+    name: 'admin-stock-product-view',
+    component: () => import('../views/stock-product/StockProductView.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/admin/stock/warehouse',
     name: 'admin-stock-warehouses',
     component: () => import('../views/warehouse/WarehouseIndex.vue'),
