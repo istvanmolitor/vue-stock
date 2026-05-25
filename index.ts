@@ -8,6 +8,7 @@ export type { StockMovement, StockMovementFormData, StockMovementType, StockMove
 export type { StockProduct, StockProductDetail, StockProductRegionQuantity, StockProductWarehouse } from './services/stockProductService'
 export { default as router } from './router/index'
 export { stockMenuBuilder } from './config/menuBuilder'
+export { default as WarehouseRegionSelect } from './components/WarehouseRegionSelect.vue'
 
 
 

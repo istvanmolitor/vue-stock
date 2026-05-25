@@ -3,8 +3,8 @@ import { computed } from 'vue'
 import InputError from '@admin/components/ui/InputError.vue'
 import Input from '@admin/components/ui/Input.vue'
 import Label from '@admin/components/ui/Label.vue'
-import Select from '@admin/components/ui/Select.vue'
 import { ProductSelect } from '@product'
+import WarehouseRegionSelect from '@stock/components/WarehouseRegionSelect.vue'
 import type {
   ProductOption,
   StockMovementType,
@@ -33,13 +33,26 @@ const emit = defineEmits<{
 const isTransfer = computed(() => props.movementType === 'transfer')
 
 const warehouseRegionOptions = computed(() =>
-  props.warehouseRegions.map((r) => ({ value: r.id, label: r.label })),
+  props.warehouseRegions,
 )
 
 function destinationOptions(excludeId: number | null) {
   return props.warehouseRegions
     .filter((r) => r.id !== Number(excludeId))
-    .map((r) => ({ value: r.id, label: r.label }))
+}
+
+function toNullableNumber(value: unknown): number | null {
+  if (value === null || value === undefined || value === '') {
+    return null
+  }
+
+  const parsedValue = Number(value)
+
+  if (!Number.isFinite(parsedValue) || parsedValue <= 0) {
+    return null
+  }
+
+  return parsedValue
 }
 
 function addItem() {
@@ -57,7 +70,18 @@ function removeItem(index: number) {
 
 function updateItem(index: number, field: keyof StockMovementItemFormData, value: unknown) {
   const updated = [...props.items]
-  updated[index] = { ...updated[index], [field]: value }
+
+  const currentItem = { ...updated[index], [field]: value }
+
+  if (
+    field === 'warehouse_region_id'
+    && currentItem.destination_warehouse_region_id !== undefined
+    && currentItem.destination_warehouse_region_id === currentItem.warehouse_region_id
+  ) {
+    currentItem.destination_warehouse_region_id = null
+  }
+
+  updated[index] = currentItem
   emit('update:items', updated)
 }
 
@@ -103,24 +127,26 @@ function itemError(index: number, field: string): string[] | undefined {
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="space-y-1">
           <Label :for="`item-region-${index}`">Forrás régió *</Label>
-          <Select
+          <WarehouseRegionSelect
             :id="`item-region-${index}`"
             :model-value="item.warehouse_region_id"
             :options="warehouseRegionOptions"
             placeholder="Válassz forrás régiót"
-            @update:model-value="updateItem(index, 'warehouse_region_id', Number($event))"
+            search-placeholder="Keresés régióra vagy raktárra..."
+            @update:model-value="updateItem(index, 'warehouse_region_id', toNullableNumber($event))"
           />
           <InputError :message="itemError(index, 'warehouse_region_id')" />
         </div>
 
         <div v-if="isTransfer" class="space-y-1">
           <Label :for="`item-dest-${index}`">Cél régió *</Label>
-          <Select
+          <WarehouseRegionSelect
             :id="`item-dest-${index}`"
             :model-value="item.destination_warehouse_region_id"
             :options="destinationOptions(item.warehouse_region_id)"
             placeholder="Válassz cél régiót"
-            @update:model-value="updateItem(index, 'destination_warehouse_region_id', Number($event))"
+            search-placeholder="Keresés régióra vagy raktárra..."
+            @update:model-value="updateItem(index, 'destination_warehouse_region_id', toNullableNumber($event))"
           />
           <InputError :message="itemError(index, 'destination_warehouse_region_id')" />
         </div>
