@@ -93,6 +93,9 @@ export const inventoryService = {
   update(id: number | string, payload: InventoryUpdateFormData) {
     return api.put<{ data: Inventory; message: string }>(`/api/admin/stock/inventories/${id}`, payload)
   },
+  delete(id: number | string) {
+    return api.delete<{ message: string }>(`/api/admin/stock/inventories/${id}`)
+  },
   close(id: number | string) {
     return api.post<{ data: Inventory; message: string }>(`/api/admin/stock/inventories/${id}/close`)
   },

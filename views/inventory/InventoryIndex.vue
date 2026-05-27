@@ -3,6 +3,7 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AdminLayout, toastService } from '@admin'
 import CreateButton from '@admin/components/ui/button/CreateButton.vue'
+import DeleteButton from '@admin/components/ui/button/DeleteButton.vue'
 import EditButton from '@admin/components/ui/button/EditButton.vue'
 import DataTable, { type Column, type PaginationMeta } from '@admin/components/ui/dataTable/DataTable.vue'
 import { inventoryService, type Inventory } from '@stock/services/inventoryService'
@@ -20,6 +21,7 @@ const pagination = ref<PaginationMeta>({
 const columns: Column<Inventory>[] = [
   { key: 'id', label: 'ID', sortable: true, width: '80px' },
   { key: 'warehouse_region', label: 'Régió', sortable: false },
+  { key: 'user', label: 'Felhasználó', sortable: false, width: '180px' },
   { key: 'description', label: 'Leírás', sortable: false },
   { key: 'items_count', label: 'Tételek', sortable: false, width: '90px' },
   { key: 'is_closed', label: 'Állapot', sortable: false, width: '120px' },
@@ -41,6 +43,17 @@ const fetchInventories = async (params: { search?: string; sort?: string; direct
 
 const editInventory = (id: number) => {
   router.push(`/admin/stock/inventory/${id}/edit`)
+}
+
+const deleteInventory = async (id: number) => {
+  try {
+    await inventoryService.delete(id)
+    toastService.success('A leltár sikeresen törölve lett!')
+    await fetchInventories({ page: Number(pagination.value.current_page) || 1 })
+  } catch (error: any) {
+    const message = error?.response?.data?.message ?? 'Hiba történt a törlés során.'
+    toastService.error(message)
+  }
 }
 
 onMounted(() => {
@@ -69,6 +82,10 @@ onMounted(() => {
         {{ (row as Inventory).warehouse_region?.label ?? (row as Inventory).warehouse_region?.name ?? '-' }}
       </template>
 
+      <template #cell-user="{ row }">
+        {{ (row as Inventory).user?.name ?? '-' }}
+      </template>
+
       <template #cell-is_closed="{ row }">
         <span
           v-if="(row as Inventory).is_closed"
@@ -90,6 +107,10 @@ onMounted(() => {
 
       <template #row-actions="{ row }">
         <EditButton @click="editInventory((row as Inventory).id!)" />
+        <DeleteButton
+          v-if="!(row as Inventory).is_closed"
+          @confirm="deleteInventory((row as Inventory).id!)"
+        />
       </template>
 
       <template #empty>
