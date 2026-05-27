@@ -2,8 +2,7 @@
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AdminLayout, toastService } from '@admin'
-import Button from '@admin/components/ui/button/Button.vue'
-import Icon from '@admin/components/ui/Icon.vue'
+import ShowButton from '@admin/components/ui/button/ShowButton.vue'
 import DataTable, { type Column, type PaginationMeta } from '@admin/components/ui/dataTable/DataTable.vue'
 import { stockProductService, type StockProduct } from '@stock/services/stockProductService'
 
@@ -80,14 +79,7 @@ onMounted(() => {
       </template>
 
       <template #row-actions="{ row }">
-        <Button
-          variant="outline"
-          size="sm"
-          @click="viewProductStock((row as StockProduct).id)"
-        >
-          <Icon name="eye" class="h-4 w-4" />
-          Megtekintés
-        </Button>
+        <ShowButton @click="viewProductStock((row as StockProduct).id)" />
       </template>
     </DataTable>
   </AdminLayout>
