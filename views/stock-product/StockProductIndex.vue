@@ -17,10 +17,22 @@ const pagination = ref<PaginationMeta>({
 })
 
 const columns: Column<StockProduct>[] = [
+  { key: 'main_image_url', label: 'Kép', sortable: false, width: '84px' },
   { key: 'sku', label: 'SKU', sortable: true },
-  { key: 'total_quantity', label: 'Összes készlet', sortable: false, width: '140px' },
-  { key: 'region_quantities', label: 'Készlet régiónként', sortable: false },
+  { key: 'total_quantity', label: 'Összesített készlet', sortable: false, width: '180px' },
 ]
+
+const formatTotalQuantity = (product: StockProduct): string => {
+  const quantity = Number(product.total_quantity).toFixed(2)
+
+  return product.quantity_unit ? `${quantity} ${product.quantity_unit}` : quantity
+}
+
+const getMainImageUrl = (row: unknown): string | null => {
+  const imageUrl = (row as { main_image_url?: string | null }).main_image_url
+
+  return imageUrl ?? null
+}
 
 const fetchProducts = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
   try {
@@ -58,20 +70,25 @@ onMounted(() => {
       default-direction="asc"
       @fetch="fetchProducts"
     >
-      <template #cell-total_quantity="{ row }">
-        {{ Number((row as StockProduct).total_quantity).toFixed(2) }}
+      <template #cell-main_image_url="{ row }">
+        <div class="flex items-center">
+          <img
+            v-if="getMainImageUrl(row)"
+            :src="getMainImageUrl(row)!"
+            :alt="`Termékkép - ${(row as StockProduct).sku}`"
+            class="h-10 w-10 rounded border border-gray-200 object-cover"
+          >
+          <div
+            v-else
+            class="flex h-10 w-10 items-center justify-center rounded border border-dashed border-gray-300 text-[10px] text-gray-500"
+          >
+            N/A
+          </div>
+        </div>
       </template>
 
-      <template #cell-region_quantities="{ row }">
-        <div class="flex flex-wrap gap-2">
-          <span
-            v-for="region in (row as StockProduct).region_quantities"
-            :key="region.warehouse_region_id"
-            class="rounded bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700"
-          >
-            {{ region.label }}: {{ Number(region.quantity).toFixed(2) }}
-          </span>
-        </div>
+      <template #cell-total_quantity="{ row }">
+        {{ formatTotalQuantity(row as StockProduct) }}
       </template>
 
       <template #empty>

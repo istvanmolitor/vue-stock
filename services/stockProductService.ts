@@ -13,6 +13,8 @@ export interface StockProductRegionQuantity {
 export interface StockProduct {
   id: number
   sku: string
+  main_image_url?: string | null
+  quantity_unit?: string | null
   total_quantity: number
   region_quantities: StockProductRegionQuantity[]
 }
@@ -27,6 +29,8 @@ export interface StockProductWarehouse {
 export interface StockProductDetail {
   id: number
   sku: string
+  main_image_url?: string | null
+  quantity_unit?: string | null
   total_quantity: number
   warehouse_count: number
   region_count: number
