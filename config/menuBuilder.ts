@@ -1,5 +1,5 @@
 import { MenuBuilder, type MenuItemConfig } from '@menu/index'
-import { ArrowRightLeft, Boxes, Package, Warehouse } from 'lucide-vue-next'
+import { ArrowRightLeft, Boxes, ClipboardList, Package, Warehouse } from 'lucide-vue-next'
 
 export class StockMenuBuilder extends MenuBuilder {
   build(menu: MenuItemConfig, menuName: string): MenuItemConfig {
@@ -44,6 +44,13 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/movement',
           icon: ArrowRightLeft,
           order: 30,
+        },
+        {
+          id: 'stock-inventory',
+          title: 'Leltár',
+          path: '/admin/stock/inventory',
+          icon: ClipboardList,
+          order: 40,
         },
       ],
     }

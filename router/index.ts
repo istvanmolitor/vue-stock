@@ -67,6 +67,24 @@ const stockRoutes: RouteRecordRaw[] = [
     component: () => import('../views/stock-movement/StockMovementEdit.vue'),
     meta: { requiresAuth: true },
   },
+  {
+    path: '/admin/stock/inventory',
+    name: 'admin-stock-inventory-index',
+    component: () => import('../views/inventory/InventoryIndex.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock/inventory/create',
+    name: 'admin-stock-inventory-create',
+    component: () => import('../views/inventory/InventoryCreate.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/admin/stock/inventory/:id/edit',
+    name: 'admin-stock-inventory-edit',
+    component: () => import('../views/inventory/InventoryEdit.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 export default stockRoutes
