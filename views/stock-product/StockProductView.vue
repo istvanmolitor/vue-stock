@@ -9,9 +9,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  LoadingSpinner,
   toastService,
 } from '@admin'
 import { createApiClient } from '@user/services/apiClient'
+import StockProductRegionLimitBox from '@stock/components/StockProductRegionLimitManager.vue'
 
 interface StockProductRegionQuantity {
   warehouse_region_id: number
@@ -19,6 +21,8 @@ interface StockProductRegionQuantity {
   warehouse_name?: string | null
   label: string
   quantity: number
+  min_quantity?: number | null
+  max_quantity?: number | null
 }
 
 interface StockProductWarehouse {
@@ -121,49 +125,14 @@ onMounted(() => {
       </div>
 
       <template v-if="isLoading">
-        <Card>
-          <CardContent class="pt-6 text-sm text-muted-foreground">
-            Betöltés...
-          </CardContent>
-        </Card>
+        <div class="flex justify-center py-10">
+          <LoadingSpinner label="Betöltés..." />
+        </div>
       </template>
 
       <template v-else-if="product">
-        <div class="grid gap-4 xl:grid-cols-2">
-          <Card
-            v-for="warehouse in product.warehouses"
-            :key="warehouse.warehouse_id"
-          >
-            <CardHeader class="gap-3 md:flex-row md:items-start md:justify-between md:space-y-0">
-              <div class="space-y-1">
-                <CardTitle>{{ warehouse.warehouse_name }}</CardTitle>
-                <CardDescription>
-                  {{ warehouse.regions.length }} régió
-                </CardDescription>
-              </div>
-              <div class="rounded-md border bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
-                Raktár készlet:
-                <span class="font-medium text-foreground">{{ formatQuantity(warehouse.total_quantity) }}</span>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div class="overflow-hidden rounded-lg border">
-                <div class="grid grid-cols-[1fr_auto] bg-muted/50 px-4 py-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  <span>Raktár régió</span>
-                  <span>Készlet</span>
-                </div>
-                <div
-                  v-for="region in warehouse.regions"
-                  :key="region.warehouse_region_id"
-                  class="grid grid-cols-[1fr_auto] items-center border-t px-4 py-3 text-sm"
-                >
-                  <span>{{ region.warehouse_region_name }}</span>
-                  <span class="font-medium">{{ formatQuantity(region.quantity) }}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+
+        <StockProductRegionLimitBox :product-id="productId" />
 
         <Card>
           <CardHeader>

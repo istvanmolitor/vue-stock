@@ -8,6 +8,13 @@ export interface StockProductRegionQuantity {
   warehouse_name?: string | null
   label: string
   quantity: number
+  min_quantity?: number | null
+  max_quantity?: number | null
+}
+
+export interface StockProductRegionLimitsPayload {
+  min_quantity: number | null
+  max_quantity: number | null
 }
 
 export interface StockProduct {
@@ -59,6 +66,12 @@ export const stockProductService = {
   },
   getById(id: number | string) {
     return api.get<{ data: StockProductDetail }>(`/api/admin/stock/products/${id}`)
+  },
+  updateRegionLimits(productId: number | string, warehouseRegionId: number | string, payload: StockProductRegionLimitsPayload) {
+    return api.put<{ data: StockProductRegionQuantity; message: string }>(
+      `/api/admin/stock/products/${productId}/regions/${warehouseRegionId}`,
+      payload,
+    )
   },
 }
 
