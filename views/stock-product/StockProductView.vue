@@ -10,10 +10,12 @@ import {
   CardHeader,
   CardTitle,
   LoadingSpinner,
+  Tabs,
   toastService,
 } from '@admin'
 import { createApiClient } from '@user/services/apiClient'
 import StockProductRegionLimitBox from '@stock/components/StockProductRegionLimitManager.vue'
+import StockProductRegionSummaryBox from '@stock/components/StockProductRegionSummaryBox.vue'
 
 interface StockProductRegionQuantity {
   warehouse_region_id: number
@@ -49,6 +51,11 @@ const router = useRouter()
 
 const product = ref<StockProductDetail | null>(null)
 const isLoading = ref(false)
+const activeTab = ref<'region_limits' | 'region_summary'>('region_summary')
+const tabItems = [
+  { key: 'region_summary', label: 'Régiók összesítve' },
+  { key: 'region_limits', label: 'Régió limit beállítások' },
+]
 
 const productId = computed(() => Number(route.params.id))
 const pageTitle = computed(() => {
@@ -108,20 +115,6 @@ onMounted(() => {
             <CardTitle class="text-3xl">{{ product ? formatQuantity(product.total_quantity) : '—' }}</CardTitle>
           </CardHeader>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Raktárak száma</CardDescription>
-            <CardTitle class="text-3xl">{{ product ? product.warehouse_count : '—' }}</CardTitle>
-          </CardHeader>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Régiók száma</CardDescription>
-            <CardTitle class="text-3xl">{{ product ? product.region_count : '—' }}</CardTitle>
-          </CardHeader>
-        </Card>
       </div>
 
       <template v-if="isLoading">
@@ -131,41 +124,22 @@ onMounted(() => {
       </template>
 
       <template v-else-if="product">
+        <Tabs
+          v-model="activeTab"
+          :items="tabItems"
+        >
+          <template #default="{ activeKey }">
+            <StockProductRegionLimitBox
+              v-if="activeKey === 'region_limits'"
+              :product-id="productId"
+            />
 
-        <StockProductRegionLimitBox :product-id="productId" />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Régiók összesítve</CardTitle>
-            <CardDescription>
-              Teljes bontás raktár és raktár régió szerint.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div class="overflow-x-auto rounded-lg border">
-              <table class="w-full text-sm">
-                <thead class="bg-muted/50 text-left text-xs uppercase tracking-wide text-muted-foreground">
-                  <tr>
-                    <th class="px-4 py-3 font-medium">Raktár</th>
-                    <th class="px-4 py-3 font-medium">Régió</th>
-                    <th class="px-4 py-3 text-right font-medium">Készlet</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr
-                    v-for="region in product.regions"
-                    :key="region.warehouse_region_id"
-                    class="border-t"
-                  >
-                    <td class="px-4 py-3">{{ region.warehouse_name ?? '-' }}</td>
-                    <td class="px-4 py-3">{{ region.warehouse_region_name }}</td>
-                    <td class="px-4 py-3 text-right font-medium">{{ formatQuantity(region.quantity) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+            <StockProductRegionSummaryBox
+              v-else
+              :product-id="productId"
+            />
+          </template>
+        </Tabs>
       </template>
 
       <Card v-else>
