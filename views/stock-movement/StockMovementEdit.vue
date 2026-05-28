@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AdminLayout, FormButtons, InputError, toastService } from '@admin'
+import { AdminLayout, FormButtons, InputError, toastService, LoadingSpinner } from '@admin'
 import BackButton from '@admin/components/ui/button/BackButton.vue'
 import Card from '@admin/components/ui/Card.vue'
 import CardContent from '@admin/components/ui/CardContent.vue'
@@ -146,7 +146,7 @@ onMounted(() => fetchEditData())
       <BackButton to="/admin/stock/movement" />
     </div>
 
-    <div v-if="isLoading" class="py-8 text-center">Betöltés...</div>
+    <div v-if="isLoading" class="py-8 text-center"><LoadingSpinner label="Betöltés..." /></div>
 
     <template v-else>
       <div v-if="isClosed" class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">

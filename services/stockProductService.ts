@@ -10,6 +10,7 @@ export interface StockProductRegionQuantity {
   quantity: number
   min_quantity?: number | null
   max_quantity?: number | null
+  has_limits?: boolean
 }
 
 export interface StockProductRegionLimitsPayload {

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { AdminLayout, FormButtons, InputError, toastService } from '@admin'
+import { AdminLayout, FormButtons, InputError, toastService, LoadingSpinner } from '@admin'
 import BackButton from '@admin/components/ui/button/BackButton.vue'
 import Card from '@admin/components/ui/Card.vue'
 import CardContent from '@admin/components/ui/CardContent.vue'
@@ -115,7 +115,7 @@ onMounted(() => {
       <BackButton to="/admin/stock/inventory" />
     </div>
 
-    <div v-if="isLoading" class="py-8 text-center">Betöltés...</div>
+    <div v-if="isLoading" class="py-8 text-center"><LoadingSpinner label="Betöltés..." /></div>
 
     <Card v-else-if="inventory">
       <CardHeader>

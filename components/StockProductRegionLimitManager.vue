@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, toastService } from '@admin'
+import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input, toastService, LoadingSpinner } from '@admin'
 import { createApiClient } from '@user/services/apiClient'
 
 interface StockProductRegionQuantity {
@@ -11,6 +11,7 @@ interface StockProductRegionQuantity {
   quantity: number
   min_quantity?: number | null
   max_quantity?: number | null
+  has_limits?: boolean
 }
 
 interface StockProductWarehouse {
@@ -47,8 +48,30 @@ const product = ref<StockProductDetail | null>(null)
 const isLoading = ref(false)
 const loadError = ref<string | null>(null)
 const regionLimitForms = ref<Record<number, RegionLimitFormState>>({})
+const visibleRegionIds = ref<Record<number, boolean>>({})
+const selectedRegionToAdd = ref('')
 
 const normalizedProductId = computed(() => Number(props.productId))
+const regionsAvailableForSelection = computed(() => {
+  if (product.value === null) {
+    return [] as StockProductRegionQuantity[]
+  }
+
+  return product.value.regions.filter((region) => visibleRegionIds.value[region.warehouse_region_id] !== true)
+})
+
+const warehousesWithVisibleRegions = computed(() => {
+  if (product.value === null) {
+    return [] as Array<StockProductWarehouse & { visible_regions: StockProductRegionQuantity[] }>
+  }
+
+  return product.value.warehouses
+    .map((warehouse) => ({
+      ...warehouse,
+      visible_regions: warehouse.regions.filter((region) => visibleRegionIds.value[region.warehouse_region_id] === true),
+    }))
+    .filter((warehouse) => warehouse.visible_regions.length > 0)
+})
 
 const formatQuantity = (quantity: number): string => Number(quantity).toFixed(2)
 
@@ -62,6 +85,7 @@ const formatLimitInput = (quantity?: number | null): string => {
 
 const initializeRegionLimitForms = (stockProduct: StockProductDetail): void => {
   const forms: Record<number, RegionLimitFormState> = {}
+  const visibleRegions: Record<number, boolean> = {}
 
   stockProduct.regions.forEach((region) => {
     forms[region.warehouse_region_id] = {
@@ -70,9 +94,13 @@ const initializeRegionLimitForms = (stockProduct: StockProductDetail): void => {
       isSaving: false,
       errors: [],
     }
+
+    visibleRegions[region.warehouse_region_id] = region.has_limits === true
   })
 
   regionLimitForms.value = forms
+  visibleRegionIds.value = visibleRegions
+  selectedRegionToAdd.value = ''
 }
 
 const parseLimitValue = (value: string): number | null => {
@@ -95,11 +123,14 @@ const applyUpdatedRegionData = (updatedRegion: StockProductRegionQuantity): void
     return
   }
 
+  const hasLimits = updatedRegion.min_quantity !== null || updatedRegion.max_quantity !== null
+
   product.value.warehouses.forEach((warehouse) => {
     const region = warehouse.regions.find((warehouseRegion) => warehouseRegion.warehouse_region_id === updatedRegion.warehouse_region_id)
     if (region !== undefined) {
       region.min_quantity = updatedRegion.min_quantity ?? null
       region.max_quantity = updatedRegion.max_quantity ?? null
+      region.has_limits = hasLimits
     }
   })
 
@@ -107,7 +138,27 @@ const applyUpdatedRegionData = (updatedRegion: StockProductRegionQuantity): void
   if (flatRegion !== undefined) {
     flatRegion.min_quantity = updatedRegion.min_quantity ?? null
     flatRegion.max_quantity = updatedRegion.max_quantity ?? null
+    flatRegion.has_limits = hasLimits
   }
+}
+
+const addRegion = (): void => {
+  const selectedRegionId = Number(selectedRegionToAdd.value)
+  if (!Number.isFinite(selectedRegionId) || selectedRegionId <= 0) {
+    return
+  }
+
+  if (regionLimitForms.value[selectedRegionId] === undefined) {
+    regionLimitForms.value[selectedRegionId] = {
+      min_quantity: '',
+      max_quantity: '',
+      isSaving: false,
+      errors: [],
+    }
+  }
+
+  visibleRegionIds.value[selectedRegionId] = true
+  selectedRegionToAdd.value = ''
 }
 
 const saveRegionLimits = async (region: StockProductRegionQuantity): Promise<void> => {
@@ -137,6 +188,7 @@ const saveRegionLimits = async (region: StockProductRegionQuantity): Promise<voi
     applyUpdatedRegionData(updatedRegion)
     regionForm.min_quantity = formatLimitInput(updatedRegion.min_quantity)
     regionForm.max_quantity = formatLimitInput(updatedRegion.max_quantity)
+    visibleRegionIds.value[region.warehouse_region_id] = true
 
     toastService.success(`${region.warehouse_region_name} limitek mentve.`)
   } catch (error: any) {
@@ -155,6 +207,43 @@ const saveRegionLimits = async (region: StockProductRegionQuantity): Promise<voi
     } else {
       toastService.error('Hiba történt a régió limitek mentésekor.')
     }
+  } finally {
+    regionForm.isSaving = false
+  }
+}
+
+const deleteRegionLimits = async (region: StockProductRegionQuantity): Promise<void> => {
+  const regionForm = regionLimitForms.value[region.warehouse_region_id]
+  if (regionForm === undefined) {
+    return
+  }
+
+  if (region.has_limits !== true) {
+    regionForm.min_quantity = ''
+    regionForm.max_quantity = ''
+    regionForm.errors = []
+    visibleRegionIds.value[region.warehouse_region_id] = false
+
+    return
+  }
+
+  try {
+    regionForm.isSaving = true
+    regionForm.errors = []
+
+    const response = await api.delete<{ data: StockProductRegionQuantity }>(
+      `/api/admin/stock/products/${normalizedProductId.value}/regions/${region.warehouse_region_id}/limits`,
+    )
+
+    applyUpdatedRegionData(response.data.data)
+    regionForm.min_quantity = ''
+    regionForm.max_quantity = ''
+    visibleRegionIds.value[region.warehouse_region_id] = false
+
+    toastService.success(`${region.warehouse_region_name} limitek torolve.`)
+  } catch (error) {
+    console.error('Hiba a regiolimit torlese kozben:', error)
+    toastService.error('Hiba történt a régió limitek törlésekor.')
   } finally {
     regionForm.isSaving = false
   }
@@ -202,9 +291,7 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
       <div
         v-if="isLoading"
         class="text-sm text-muted-foreground"
-      >
-        Betöltés...
-      </div>
+      ><LoadingSpinner label="Betöltés..." /></div>
 
       <div
         v-else-if="loadError !== null"
@@ -217,8 +304,35 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
         v-else-if="product"
         class="space-y-4"
       >
+        <div class="rounded-lg border bg-muted/30 p-4">
+          <div class="mb-2 text-sm font-medium">Régió hozzáadása</div>
+          <div class="flex flex-col gap-3 md:flex-row md:items-center">
+            <select
+              v-model="selectedRegionToAdd"
+              class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm md:max-w-md"
+            >
+              <option value="">Válassz régiót...</option>
+              <option
+                v-for="region in regionsAvailableForSelection"
+                :key="region.warehouse_region_id"
+                :value="String(region.warehouse_region_id)"
+              >
+                {{ region.warehouse_name ?? '-' }} - {{ region.warehouse_region_name }}
+              </option>
+            </select>
+            <Button
+              variant="outline"
+              size="sm"
+              :disabled="selectedRegionToAdd === ''"
+              @click="addRegion"
+            >
+              Régió hozzáadása
+            </Button>
+          </div>
+        </div>
+
         <div
-          v-for="warehouse in product.warehouses"
+          v-for="warehouse in warehousesWithVisibleRegions"
           :key="warehouse.warehouse_id"
           class="overflow-hidden rounded-lg border"
         >
@@ -226,7 +340,7 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
             <div>
               <div class="font-medium">{{ warehouse.warehouse_name }}</div>
               <div class="text-xs text-muted-foreground">
-                {{ warehouse.regions.length }} régió
+                {{ warehouse.visible_regions.length }} régió
               </div>
             </div>
             <div class="text-sm text-muted-foreground">
@@ -244,7 +358,7 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
           </div>
 
           <div
-            v-for="region in warehouse.regions"
+            v-for="region in warehouse.visible_regions"
             :key="region.warehouse_region_id"
             class="grid grid-cols-1 gap-3 border-t px-4 py-3 text-sm md:grid-cols-[1fr_auto_auto_auto_auto] md:items-center"
           >
@@ -260,13 +374,24 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
               placeholder="Max"
               class="h-8"
             />
-            <Button
-              class="h-8"
-              :disabled="regionLimitForms[region.warehouse_region_id].isSaving"
-              @click="saveRegionLimits(region)"
-            >
-              {{ regionLimitForms[region.warehouse_region_id].isSaving ? 'Mentés...' : 'Mentés' }}
-            </Button>
+            <div class="flex items-center justify-end gap-2">
+              <Button
+                class="h-8"
+                :disabled="regionLimitForms[region.warehouse_region_id].isSaving"
+                @click="saveRegionLimits(region)"
+              >
+                {{ regionLimitForms[region.warehouse_region_id].isSaving ? 'Mentés...' : 'Mentés' }}
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                class="h-8"
+                :disabled="regionLimitForms[region.warehouse_region_id].isSaving"
+                @click="deleteRegionLimits(region)"
+              >
+                Törlés
+              </Button>
+            </div>
             <div
               v-if="regionLimitForms[region.warehouse_region_id].errors.length > 0"
               class="text-xs text-destructive md:col-span-5"
@@ -274,6 +399,13 @@ watch(normalizedProductId, fetchProduct, { immediate: true })
               {{ regionLimitForms[region.warehouse_region_id].errors.join(' ') }}
             </div>
           </div>
+        </div>
+
+        <div
+          v-if="warehousesWithVisibleRegions.length === 0"
+          class="text-sm text-muted-foreground"
+        >
+          Jelenleg nincs beállított minimum/maximum érték. Adj hozzá egy régiót a kezdéshez.
         </div>
       </div>
 
