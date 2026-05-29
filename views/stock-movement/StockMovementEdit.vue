@@ -12,6 +12,7 @@ import CardTitle from '@admin/components/ui/CardTitle.vue'
 import Label from '@admin/components/ui/Label.vue'
 import Select from '@admin/components/ui/Select.vue'
 import Textarea from '@admin/components/ui/Textarea.vue'
+import Icon from '@admin/components/ui/Icon.vue'
 import StockMovementItemsEditor from './StockMovementItemsEditor.vue'
 import {
   stockMovementService,
@@ -149,12 +150,10 @@ onMounted(() => fetchEditData())
     <div v-if="isLoading" class="py-8 text-center"><LoadingSpinner label="Betöltés..." /></div>
 
     <template v-else>
-      <div v-if="isClosed" class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
-        <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-        Végrehajtva: {{ movement?.closed_at }}
-      </div>
+       <div v-if="isClosed" class="mb-4 flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-300">
+         <Icon name="check" class="h-4 w-4 shrink-0" />
+         Végrehajtva: {{ movement?.closed_at }}
+       </div>
 
       <Card>
         <CardHeader>
@@ -170,13 +169,10 @@ onMounted(() => fetchEditData())
               type="button"
               :disabled="isExecuting"
               class="inline-flex shrink-0 items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
-              @click="handleExecute"
-            >
-              <svg v-if="isExecuting" class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              {{ isExecuting ? 'Végrehajtás...' : 'Végrehajtás' }}
+             @click="handleExecute"
+             >
+               <Icon v-if="isExecuting" name="loading" class="h-4 w-4 animate-spin" />
+               {{ isExecuting ? 'Végrehajtás...' : 'Végrehajtás' }}
             </button>
           </div>
         </CardHeader>
