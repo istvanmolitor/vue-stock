@@ -16,6 +16,7 @@ export class StockMenuBuilder extends MenuBuilder {
       title: 'Készlet',
       icon: Boxes,
       order: 40,
+      permission: ['stock', 'stock_movement'],
       children: [
         {
           id: 'stock-products',
@@ -23,6 +24,7 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/products',
           icon: Package,
           order: 5,
+          permission: 'stock',
         },
         {
           id: 'stock-warehouses',
@@ -30,6 +32,7 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/warehouse',
           icon: Warehouse,
           order: 10,
+          permission: 'stock',
         },
         {
           id: 'stock-warehouse-regions',
@@ -37,6 +40,7 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/warehouse-region',
           icon: Boxes,
           order: 20,
+          permission: 'stock',
         },
         {
           id: 'stock-movement',
@@ -44,6 +48,7 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/movement',
           icon: ArrowRightLeft,
           order: 30,
+          permission: 'stock_movement',
         },
         {
           id: 'stock-inventory',
@@ -51,6 +56,7 @@ export class StockMenuBuilder extends MenuBuilder {
           path: '/admin/stock/inventory',
           icon: ClipboardList,
           order: 40,
+          permission: 'stock',
         },
       ],
     }
