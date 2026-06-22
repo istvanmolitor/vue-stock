@@ -28,7 +28,6 @@ const typeLabels: Record<string, string> = {
 }
 
 const columns: Column<StockMovement>[] = [
-  { key: 'id', label: 'ID', sortable: true, width: '80px' },
   { key: 'type_label', label: 'Típus', sortable: false, width: '120px' },
   { key: 'warehouse', label: 'Raktár', sortable: false },
   { key: 'description', label: 'Leírás', sortable: false },

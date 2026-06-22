@@ -19,7 +19,6 @@ const pagination = ref<PaginationMeta>({
 })
 
 const columns: Column<Inventory>[] = [
-  { key: 'id', label: 'ID', sortable: true, width: '80px' },
   { key: 'warehouse_region', label: 'Régió', sortable: false },
   { key: 'user', label: 'Felhasználó', sortable: false, width: '180px' },
   { key: 'description', label: 'Leírás', sortable: false },
