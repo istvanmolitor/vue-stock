@@ -120,7 +120,7 @@ onMounted(() => {
         </div>
 
         <div class="flex items-center gap-2">
-          <Checkbox id="is_primary" v-model:checked="form.is_primary" />
+          <Checkbox id="is_primary" v-model="form.is_primary" />
           <Label for="is_primary">Elsődleges régió</Label>
           <InputError :message="errors.is_primary" />
         </div>
