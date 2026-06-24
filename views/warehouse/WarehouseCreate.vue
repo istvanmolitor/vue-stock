@@ -9,7 +9,7 @@ import CardFooter from '@admin/components/ui/CardFooter.vue'
 import CardHeader from '@admin/components/ui/CardHeader.vue'
 import CardTitle from '@admin/components/ui/CardTitle.vue'
 import Checkbox from '@admin/components/ui/Checkbox.vue'
-import Input from '@admin/components/ui/Input.vue'
+import InputField from '@admin/components/ui/InputField.vue'
 import Label from '@admin/components/ui/Label.vue'
 import { warehouseService, type WarehouseFormData } from '@stock/services/warehouseService'
 
@@ -69,17 +69,9 @@ const handleSubmit = async () => {
         <CardDescription>Add meg az új raktár adatait a létrehozáshoz.</CardDescription>
       </CardHeader>
       <CardContent class="space-y-4">
-        <div class="space-y-2">
-          <Label for="name">Név *</Label>
-          <Input id="name" v-model="form.name" placeholder="Központi raktár" />
-          <InputError :message="errors.name" />
-        </div>
+        <InputField id="name" label="Név" v-model="form.name" placeholder="Központi raktár" :required="true" :errors="errors.name" />
 
-        <div class="space-y-2">
-          <Label for="description">Leírás</Label>
-          <Input id="description" v-model="form.description" placeholder="A fő telephely raktára" />
-          <InputError :message="errors.description" />
-        </div>
+        <InputField id="description" label="Leírás" v-model="form.description" placeholder="A fő telephely raktára" :errors="errors.description" />
 
         <div class="flex items-center gap-2">
           <Checkbox id="is_primary" v-model="form.is_primary" />
