@@ -1,45 +1,21 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AdminLayout, toastService } from '@admin'
 import CreateButton from '@admin/components/ui/button/CreateButton.vue'
 import DeleteButton from '@admin/components/ui/button/DeleteButton.vue'
 import EditButton from '@admin/components/ui/button/EditButton.vue'
-import DataTable, { type Column, type PaginationMeta } from '@admin/components/ui/dataTable/DataTable.vue'
+import DataTable from '@admin/components/ui/dataTable/DataTable.vue'
 import { warehouseRegionService, type WarehouseRegion } from '@stock/services/warehouseRegionService'
 
 const router = useRouter()
-const warehouseRegions = ref<WarehouseRegion[]>([])
-const isLoading = ref(false)
-const pagination = ref<PaginationMeta>({
-  current_page: 1,
-  last_page: 1,
-  per_page: 10,
-  total: 0,
-})
-
-const columns = ref<Column[]>([])
-
-const fetchWarehouseRegions = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
-  try {
-    isLoading.value = true
-    const response = await warehouseRegionService.getAll(params)
-    warehouseRegions.value = response.data.data
-    pagination.value = response.data.meta
-    columns.value = (response.data.columns ?? []) as Column[]
-  } catch (error) {
-    console.error('Hiba a régiók betöltésekor:', error)
-    toastService.error('Hiba történt a régiók betöltésekor.')
-  } finally {
-    isLoading.value = false
-  }
-}
+const table = ref()
 
 const deleteWarehouseRegion = async (id: number) => {
   try {
     await warehouseRegionService.delete(id)
     toastService.success('A telephely régió sikeresen törölve lett!')
-    await fetchWarehouseRegions({ page: Number(pagination.value.current_page) })
+    table.value?.refresh()
   } catch (error) {
     console.error('Hiba a régió törlésekor:', error)
     toastService.error('Hiba történt a törlés során.')
@@ -49,24 +25,13 @@ const deleteWarehouseRegion = async (id: number) => {
 const editWarehouseRegion = (id: number) => {
   router.push(`/admin/stock/warehouse-region/${id}/edit`)
 }
-
-onMounted(() => {
-  fetchWarehouseRegions({ page: 1, sort: 'name', direction: 'asc' })
-})
 </script>
 
 <template>
   <AdminLayout pageTitle="Raktárrégiók">
     <DataTable
-      :columns="columns"
-      :data="warehouseRegions"
-      :loading="isLoading"
-      :pagination="pagination"
-      :searchable="true"
-      search-placeholder="Keresés név vagy leírás alapján..."
-      default-sort="name"
-      default-direction="asc"
-      @fetch="fetchWarehouseRegions"
+      ref="table"
+      url="/api/admin/stock/warehouse-regions"
     >
       <template #actions>
         <CreateButton to="/admin/stock/warehouse-region/create">
@@ -104,5 +69,3 @@ onMounted(() => {
     </DataTable>
   </AdminLayout>
 </template>
-
-

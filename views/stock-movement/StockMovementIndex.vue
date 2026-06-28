@@ -1,25 +1,18 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AdminLayout, toastService } from '@admin'
 import CreateButton from '@admin/components/ui/button/CreateButton.vue'
 import DeleteButton from '@admin/components/ui/button/DeleteButton.vue'
 import EditButton from '@admin/components/ui/button/EditButton.vue'
-import DataTable, { type Column, type PaginationMeta } from '@admin/components/ui/dataTable/DataTable.vue'
+import DataTable from '@admin/components/ui/dataTable/DataTable.vue'
 import {
   stockMovementService,
   type StockMovement,
 } from '@stock/services/stockMovementService'
 
 const router = useRouter()
-const movements = ref<StockMovement[]>([])
-const isLoading = ref(false)
-const pagination = ref<PaginationMeta>({
-  current_page: 1,
-  last_page: 1,
-  per_page: 15,
-  total: 0,
-})
+const table = ref()
 
 const typeLabels: Record<string, string> = {
   in: 'Bejövő',
@@ -27,27 +20,11 @@ const typeLabels: Record<string, string> = {
   transfer: 'Áthelyezés',
 }
 
-const columns = ref<Column[]>([])
-
-const fetchMovements = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
-  try {
-    isLoading.value = true
-    const response = await stockMovementService.getAll(params)
-    movements.value = response.data.data
-    pagination.value = response.data.meta
-    columns.value = (response.data.columns ?? []) as Column[]
-  } catch {
-    toastService.error('Hiba történt a készletmozgások betöltésekor.')
-  } finally {
-    isLoading.value = false
-  }
-}
-
 const deleteMovement = async (id: number) => {
   try {
     await stockMovementService.delete(id)
     toastService.success('A készletmozgás sikeresen törölve lett!')
-    await fetchMovements({ page: Number(pagination.value.current_page) })
+    table.value?.refresh()
   } catch (error: any) {
     const msg = error.response?.data?.message ?? 'Hiba történt a törlés során.'
     toastService.error(msg)
@@ -57,22 +34,13 @@ const deleteMovement = async (id: number) => {
 const editMovement = (id: number) => {
   router.push(`/admin/stock/movement/${id}/edit`)
 }
-
-onMounted(() => {
-  fetchMovements({ page: 1 })
-})
 </script>
 
 <template>
   <AdminLayout pageTitle="Készletmozgások">
     <DataTable
-      :columns="columns"
-      :data="movements"
-      :loading="isLoading"
-      :pagination="pagination"
-      :searchable="true"
-      search-placeholder="Keresés leírás alapján..."
-      @fetch="fetchMovements"
+      ref="table"
+      url="/api/admin/stock/movements"
     >
       <template #actions>
         <CreateButton to="/admin/stock/movement/create">
@@ -126,5 +94,3 @@ onMounted(() => {
     </DataTable>
   </AdminLayout>
 </template>
-
-

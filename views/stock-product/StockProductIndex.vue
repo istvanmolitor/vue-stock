@@ -1,22 +1,13 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { AdminLayout, toastService } from '@admin'
 import ShowButton from '@admin/components/ui/button/ShowButton.vue'
-import DataTable, { type Column, type PaginationMeta } from '@admin/components/ui/dataTable/DataTable.vue'
-import { stockProductService, type StockProduct } from '@stock/services/stockProductService'
+import DataTable from '@admin/components/ui/dataTable/DataTable.vue'
+import { type StockProduct } from '@stock/services/stockProductService'
 
 const router = useRouter()
-const products = ref<StockProduct[]>([])
-const isLoading = ref(false)
-const pagination = ref<PaginationMeta>({
-  current_page: 1,
-  last_page: 1,
-  per_page: 10,
-  total: 0,
-})
-
-const columns = ref<Column[]>([])
+const table = ref()
 
 const formatTotalQuantity = (product: StockProduct): string => {
   const quantity = Number(product.total_quantity).toFixed(2)
@@ -30,42 +21,16 @@ const getMainImageUrl = (row: unknown): string | null => {
   return imageUrl ?? null
 }
 
-const fetchProducts = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
-  try {
-    isLoading.value = true
-    const response = await stockProductService.getAll(params)
-    products.value = response.data.data
-    pagination.value = response.data.meta
-    columns.value = (response.data.columns ?? []) as Column[]
-  } catch (error) {
-    console.error('Hiba a készletlista betöltésekor:', error)
-    toastService.error('Hiba történt a készletlista betöltésekor.')
-  } finally {
-    isLoading.value = false
-  }
-}
-
 const viewProductStock = (id: number) => {
   router.push(`/admin/stock/products/${id}`)
 }
-
-onMounted(() => {
-  fetchProducts({ page: 1, sort: 'sku', direction: 'asc' })
-})
 </script>
 
 <template>
   <AdminLayout pageTitle="Termék készlet">
     <DataTable
-      :columns="columns"
-      :data="products"
-      :loading="isLoading"
-      :pagination="pagination"
-      :searchable="true"
-      search-placeholder="Keresés SKU alapján..."
-      default-sort="sku"
-      default-direction="asc"
-      @fetch="fetchProducts"
+      ref="table"
+      url="/api/admin/stock/products"
     >
       <template #cell-main_image_url="{ row }">
         <div class="flex items-center">
@@ -98,5 +63,3 @@ onMounted(() => {
     </DataTable>
   </AdminLayout>
 </template>
-
-
