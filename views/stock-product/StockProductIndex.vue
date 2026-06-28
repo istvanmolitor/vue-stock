@@ -16,11 +16,7 @@ const pagination = ref<PaginationMeta>({
   total: 0,
 })
 
-const columns: Column<StockProduct>[] = [
-  { key: 'main_image_url', label: 'Kép', sortable: false, width: '84px' },
-  { key: 'sku', label: 'SKU', sortable: true },
-  { key: 'total_quantity', label: 'Összesített készlet', sortable: false, width: '180px' },
-]
+const columns = ref<Column[]>([])
 
 const formatTotalQuantity = (product: StockProduct): string => {
   const quantity = Number(product.total_quantity).toFixed(2)
@@ -40,6 +36,7 @@ const fetchProducts = async (params: { search?: string; sort?: string; direction
     const response = await stockProductService.getAll(params)
     products.value = response.data.data
     pagination.value = response.data.meta
+    columns.value = (response.data.columns ?? []) as Column[]
   } catch (error) {
     console.error('Hiba a készletlista betöltésekor:', error)
     toastService.error('Hiba történt a készletlista betöltésekor.')
