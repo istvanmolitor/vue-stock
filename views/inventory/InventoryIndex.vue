@@ -18,14 +18,7 @@ const pagination = ref<PaginationMeta>({
   total: 0,
 })
 
-const columns: Column<Inventory>[] = [
-  { key: 'warehouse_region', label: 'Régió', sortable: false },
-  { key: 'user', label: 'Felhasználó', sortable: false, width: '180px' },
-  { key: 'description', label: 'Leírás', sortable: false },
-  { key: 'items_count', label: 'Tételek', sortable: false, width: '90px' },
-  { key: 'is_closed', label: 'Állapot', sortable: false, width: '120px' },
-  { key: 'stock_updated_at', label: 'Készlet módosítva', sortable: true, width: '180px' },
-]
+const columns = ref<Column[]>([])
 
 const fetchInventories = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
   try {
@@ -33,6 +26,7 @@ const fetchInventories = async (params: { search?: string; sort?: string; direct
     const response = await inventoryService.getAll(params)
     inventories.value = response.data.data
     pagination.value = response.data.meta
+    columns.value = (response.data.columns ?? []) as Column[]
   } catch {
     toastService.error('Hiba történt a leltárak betöltésekor.')
   } finally {

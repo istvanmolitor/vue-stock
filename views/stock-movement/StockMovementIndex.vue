@@ -27,14 +27,7 @@ const typeLabels: Record<string, string> = {
   transfer: 'Áthelyezés',
 }
 
-const columns: Column<StockMovement>[] = [
-  { key: 'type_label', label: 'Típus', sortable: false, width: '120px' },
-  { key: 'warehouse', label: 'Raktár', sortable: false },
-  { key: 'description', label: 'Leírás', sortable: false },
-  { key: 'items_count', label: 'Tételek', sortable: false, width: '80px' },
-  { key: 'is_closed', label: 'Állapot', sortable: false, width: '120px' },
-  { key: 'created_at', label: 'Létrehozva', sortable: true, width: '170px' },
-]
+const columns = ref<Column[]>([])
 
 const fetchMovements = async (params: { search?: string; sort?: string; direction?: 'asc' | 'desc'; page?: number }) => {
   try {
@@ -42,6 +35,7 @@ const fetchMovements = async (params: { search?: string; sort?: string; directio
     const response = await stockMovementService.getAll(params)
     movements.value = response.data.data
     pagination.value = response.data.meta
+    columns.value = (response.data.columns ?? []) as Column[]
   } catch {
     toastService.error('Hiba történt a készletmozgások betöltésekor.')
   } finally {
