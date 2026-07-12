@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { AdminLayout, BackButton, FormButtons, InputError, toastService } from '@admin'
+import { AdminLayout, BackButton, FormButtons, toastService } from '@admin'
 import Card from '@admin/components/ui/Card.vue'
 import CardContent from '@admin/components/ui/CardContent.vue'
 import CardDescription from '@admin/components/ui/CardDescription.vue'
 import CardFooter from '@admin/components/ui/CardFooter.vue'
 import CardHeader from '@admin/components/ui/CardHeader.vue'
 import CardTitle from '@admin/components/ui/CardTitle.vue'
-import Checkbox from '@admin/components/ui/Checkbox.vue'
+import CheckboxField from '@admin/components/ui/CheckboxField.vue'
 import InputField from '@admin/components/ui/InputField.vue'
-import Label from '@admin/components/ui/Label.vue'
 import { warehouseService, type WarehouseFormData } from '@stock/services/warehouseService'
 
 const router = useRouter()
@@ -73,11 +72,7 @@ const handleSubmit = async () => {
 
         <InputField id="description" label="Leírás" v-model="form.description" placeholder="A fő telephely raktára" :errors="errors.description" />
 
-        <div class="flex items-center gap-2">
-          <Checkbox id="is_primary" v-model="form.is_primary" />
-          <Label for="is_primary">Elsődleges raktár</Label>
-          <InputError :message="errors.is_primary" />
-        </div>
+        <CheckboxField id="is_primary" label="Elsődleges raktár" v-model="form.is_primary" :errors="errors.is_primary" />
       </CardContent>
       <CardFooter>
         <FormButtons
