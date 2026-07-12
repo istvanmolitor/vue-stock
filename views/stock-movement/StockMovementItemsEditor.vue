@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import InputError from '@admin/components/ui/InputError.vue'
-import Input from '@admin/components/ui/Input.vue'
+import InputField from '@admin/components/ui/InputField.vue'
 import Label from '@admin/components/ui/Label.vue'
 import { ProductSelect } from '@product'
 import WarehouseRegionSelect from '@stock/components/WarehouseRegionSelect.vue'
@@ -163,18 +163,16 @@ function itemError(index: number, field: string): string[] | undefined {
           <InputError :message="itemError(index, 'product_id')" />
         </div>
 
-        <div class="space-y-1">
-          <Label :for="`item-qty-${index}`">Mennyiség *</Label>
-          <Input
-            :id="`item-qty-${index}`"
-            :model-value="item.quantity"
-            type="number"
-            min="0.001"
-            step="any"
-            @update:model-value="updateItem(index, 'quantity', Number($event))"
-          />
-          <InputError :message="itemError(index, 'quantity')" />
-        </div>
+        <InputField
+          :id="`item-qty-${index}`"
+          label="Mennyiség *"
+          :model-value="item.quantity"
+          type="number"
+          min="0.001"
+          step="any"
+          :errors="itemError(index, 'quantity')"
+          @update:model-value="updateItem(index, 'quantity', Number($event))"
+        />
       </div>
     </div>
 

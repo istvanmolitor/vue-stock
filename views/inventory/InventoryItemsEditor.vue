@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Input from '@admin/components/ui/Input.vue'
 import InputError from '@admin/components/ui/InputError.vue'
+import InputField from '@admin/components/ui/InputField.vue'
 import Label from '@admin/components/ui/Label.vue'
 import { ProductSelect } from '@product'
 import type { InventoryItem } from '@stock/services/inventoryService'
@@ -111,24 +111,26 @@ function itemError(index: number, field: string): string[] | undefined {
             <InputError :message="itemError(index, 'product_id')" />
           </div>
 
-          <div class="space-y-1">
-            <Label :for="`inventory-old-${item.id ?? index}`">Régi készlet</Label>
-            <Input :id="`inventory-old-${item.id ?? index}`" :model-value="item.old_quantity" type="number" step="1" disabled />
-          </div>
+          <InputField
+            :id="`inventory-old-${item.id ?? index}`"
+            label="Régi készlet"
+            :model-value="item.old_quantity"
+            type="number"
+            step="1"
+            disabled
+          />
 
-          <div class="space-y-1">
-            <Label :for="`inventory-new-${item.id ?? index}`">Új készlet</Label>
-            <Input
-              :id="`inventory-new-${item.id ?? index}`"
-              :model-value="item.new_quantity"
-              type="number"
-              step="1"
-              min="0"
-              :disabled="readOnly"
-              @update:model-value="updateNewQuantity(index, Number($event))"
-            />
-            <InputError :message="itemError(index, 'new_quantity')" />
-          </div>
+          <InputField
+            :id="`inventory-new-${item.id ?? index}`"
+            label="Új készlet"
+            :model-value="item.new_quantity"
+            type="number"
+            step="1"
+            min="0"
+            :disabled="readOnly"
+            :errors="itemError(index, 'new_quantity')"
+            @update:model-value="updateNewQuantity(index, Number($event))"
+          />
         </div>
       </div>
     </div>
